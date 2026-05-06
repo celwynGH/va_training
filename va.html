@@ -311,50 +311,62 @@
     lucide.createIcons();
 
     // Form submission
-    // Replace your existing form submission block with this:
-document.getElementById('contact-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+    document.getElementById('contact-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-  const submitBtn = document.getElementById('submit-btn');
-  const formStatus = document.getElementById('form-status');
-  const scriptURL = "https://script.google.com/macros/s/AKfycbwJDz3h8D3vUFzZUajA0uPMTbsc6LVUGxrcmwV0sxAdm5qYA3I5W6aP_ZcPd0HCt3GxZQ/exec"; // Ensure this is your latest Executable URL
+      const submitBtn = document.getElementById('submit-btn');
+      const formStatus = document.getElementById('form-status');
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const message = document.getElementById('message').value;
 
-  const formData = new FormData(e.target);
+      // Show loading state
+      submitBtn.disabled = true;
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<div class="loading-spinner"></div> <span>Sending...</span>';
 
-  // Show loading state
-  submitBtn.disabled = true;
-  const originalText = submitBtn.innerHTML;
-  submitBtn.innerHTML = '<div class="loading-spinner"></div> <span>Sending...</span>';
+      // Save to data sheet
+      const scriptURL = "https://script.google.com/macros/s/AKfycby5oJrJvMcYFRaobXUPtFZ6LDMH4Dhy8ScgLtyleY-y7qxhLanUw2TWHSlgY7wZM-9XLA/exec";
 
-  try {
-    // We use 'no-cors' because Google Scripts redirect, which usually triggers browser errors
-    // Even with 'no-cors', the data WILL still reach the Google Sheet.
-    await fetch(scriptURL, {
-      method: 'POST',
-      body: formData,
-      mode: 'no-cors' 
+try {
+  const response = await fetch(scriptURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      message: message
+    })
+  });
+
+  const result = await response.json();
+  console.log("Server response:", result);
+
+  formStatus.innerHTML = `
+    <div class="toast p-4 bg-green-50 text-green-800 rounded-lg border border-green-200">
+      Message sent successfully!
+    </div>
+  `;
+
+  document.getElementById('contact-form').reset();
+
+} catch (error) {
+  console.error("Error:", error);
+
+  formStatus.innerHTML = `
+    <div class="toast p-4 bg-red-50 text-red-800 rounded-lg border border-red-200">
+      Failed to send message.
+    </div>
+  `;
+}
+
+      // Reset button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
     });
-
-    // Since 'no-cors' won't let us read the response, we assume success if no error is thrown
-    formStatus.innerHTML = `
-      <div class="toast p-4 bg-green-50 text-green-800 rounded-lg border border-green-200">
-        Message sent successfully!
-      </div>
-    `;
-    document.getElementById('contact-form').reset();
-
-  } catch (error) {
-    console.error("Error:", error);
-    formStatus.innerHTML = `
-      <div class="toast p-4 bg-red-50 text-red-800 rounded-lg border border-red-200">
-        Something went wrong. Please try again.
-      </div>
-    `;
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalText;
-  }
-});
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f6636ede708ff8d',t:'MTc3Nzg4NDE3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
